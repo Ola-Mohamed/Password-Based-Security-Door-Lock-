@@ -1,0 +1,41 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+
+#include"keypad.h"
+#include"lcd.h"
+#include"UART.h"
+#include "timer0.h"
+
+
+
+
+/*timer global variables*/
+uint8 volatile g_tick = 0;
+uint8 volatile g_sec_counted = 0;
+uint8 volatile g_seconds_needed=0;
+
+/*global variable determines in which step the code will be */
+uint8 volatile g_step=0;
+
+
+
+int main(){
+
+	/*initialize LCD and UART */
+		LCD_init();
+		UART_init();
+
+
+
+
+
+
+
+
+
+}

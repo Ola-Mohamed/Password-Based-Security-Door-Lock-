@@ -1,0 +1,10 @@
+22:52:10 **** Incremental Build of configuration Debug for project MCU1 ****
+make all 
+Building file: ../UART.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=1000000UL -MMD -MP -MF"UART.d" -MT"UART.o" -c -o "UART.o" "../UART.c"
+make: *** [UART.o] Error -1073741502
+"make all" terminated with exit code 2. Build might be incomplete.
+
+22:52:15 Build Failed. 1 errors, 0 warnings. (took 5s.318ms)
+

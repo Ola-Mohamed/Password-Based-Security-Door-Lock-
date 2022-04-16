@@ -1,0 +1,14 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+
+#include"keypad.h"
+#include"lcd.h"
+#include"uart.h"
+#include "timer0.h"
+
+

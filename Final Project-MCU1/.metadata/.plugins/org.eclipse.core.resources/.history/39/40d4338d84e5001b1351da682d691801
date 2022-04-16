@@ -1,0 +1,102 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+
+#include"MCU1.h"
+
+
+uint8 key[5];
+uint8 check=0;
+uint8 send_key=0;
+
+void ISR_COUNT(void){
+	g_tick++;		/*increases the global tick each time the timer interrupt*/
+	if(g_tick == NUMBER_OF_OVERFLOWS_PER_SECOND){		/*checks if the timer counted one second*/
+		g_tick = 0; 									/*clear the tick counter again to count a new second*/
+		g_sec_counted++;								/*increases seconds counter*/
+
+		/*checks if seconds counter reached the required secounds
+		 * clears the seconds counter
+		 * stop timer0
+		 * go to step 2 (main)
+		 */
+		if (g_sec_counted==g_seconds_needed){
+			g_sec_counted=0;
+			timer0_DeInit();
+			g_step=2;
+		}
+	}
+
+
+}
+
+int main(){
+
+
+	/*initialize LCD and UART */
+		LCD_init();
+		UART_init(&UART_configuration);
+
+     /*clear LCD at beginning*/
+		LCD_clearScreen();
+		LCD_displayStringRowColumn(1,1,"DOOR LOCKER SYSTEM");
+
+		SREG |= (1<<7);       /* Enable I-Bit for Interrupts */    /* Enable I-Bit for Interrupts */
+
+while(1){
+
+}}
+
+/***************************************************************************************************
+ * [Function Name]:   createPassword
+ *
+ * [Description]:     Function to Create and Store password in  array
+ *
+ * [Arguments]:       void
+ *
+ * [Returns]:         void
+ ***************************************************************************************************/
+void createPassword(void){
+
+	switch(g_step){
+	/*
+	 * 1.open the project for the first time and there is no password saved in EEPROM or when changing password
+	 * 2.display message to enter password*/
+	case 0:
+		LCD_clearScreen();
+		LCD_displayString("enter new pass");	/*display string on LCD for 0.5 second*/
+		LCD_goToRowColumn(1,0);
+		for(int i=0 ;i<5;i++ ){
+		/* if any switch pressed for more than 500 ms it counts more than one press */
+		key[i] = KeyPad_getPressedKey(); /* get the pressed key number */
+		LCD_displayCharacter('*');
+		/*extra addition
+		 * button ON/C in keyboard clears the password entered without count any wrong trials
+		*/
+		if(key[i]==13){
+		/*resets the LCD screen*/
+			LCD_clearScreen();
+			LCD_displayString("enter new pass");
+			LCD_goToRowColumn(1,0);
+			i=-1;	/*the counter is set to -1 so the next loop will be resets to zero as i increases in each loop by one*/
+			}
+					_delay_ms(500); /* Press time */
+			}
+			LCD_clearScreen();
+			/*repeats entering the key until user presses = sign */
+			do
+			{
+			LCD_displayString("press = to send!");//Statements
+			send_key=KeyPad_getPressedKey();
+			}while(send_key!= '=');
+
+
+
+}
+
+
+}

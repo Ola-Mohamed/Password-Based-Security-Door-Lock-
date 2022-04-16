@@ -1,0 +1,45 @@
+ /******************************************************************************
+ *
+ * Module: MCU2
+ *
+ * File Name:MCU2.c
+ * Author: Ola Mohamed
+ *
+ * ******************************************************************************/
+
+#include "MCU2.h"
+
+int main(){
+	/* make the PC2 , PC3 and PC4 pins output pins for motor and buzzer*/
+
+		DDRC |= (1<<PC2) | (1<<PC3) | (1<<PC4) ;
+
+		UART_init(&UART_config) ;
+
+	  /*initialization of EEPROM */
+		EEPROM_init() ;
+
+		SET_BIT(SREG , 7) ;/*enabling global interrupt bit */
+
+
+
+
+
+
+	while(1){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	}
+}

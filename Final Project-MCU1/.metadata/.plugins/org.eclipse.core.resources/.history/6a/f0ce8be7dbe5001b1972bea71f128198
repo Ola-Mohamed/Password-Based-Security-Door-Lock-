@@ -1,0 +1,99 @@
+/*
+ * MCU1.h
+ *
+ *  Created on: 15 Jul 2021
+ *      Author: 20128
+ */
+
+#ifndef MCU1_H_
+#define MCU1_H_
+/************************************************************************************************
+ *                                       DRIVERS                                         *
+ ************************************************************************************************/
+#include"keypad.h"
+#include"lcd.h"
+#include"UART.h"
+#include "timer1.h"
+#include"common_macros.h"
+#include"std_types.h"
+#include"micro_config.h"
+/************************************************************************************************
+ *                                       COMMANDS
+ ***************************************************************************************/
+#define Ready                                             0x01
+#define Done                                               0x02
+#define PASSWORD_SEND                                       0x03
+#define PASSWORD_MATCH                                      0x04
+#define PASSWORD_NOT_MATCHED                                0x05
+#define PASSWORD_CONFIRMATION_SEND                          0x06
+#define CHANGE_PASSWORD                                     0x07
+#define OPEN_DOOR                                           0x08
+#define CHECK_PASSWORD                                      0x09
+#define WRONG_PASSWORD                                      0xA
+#define CHECK_IF_SAVED                                      0xB
+#define YES_SAVED                                           0xC
+#define NO_SAVED_PASSWORD                                   0xD
+#define PASSWORD_ARRAY_SIZE                                 5
+#define ONE_AND_HALF_SEC_DELAY                              1500
+#define THREE_SECONDS_DELAY                                 3000
+#define FOUR_SECONDS_DELAY                                  4000
+#define ROW_ZERO                                            0
+#define ROW_ONE                                             1
+#define COLUMN_ZERO                                         0
+#define COLUMN_SEVEN                                        7
+#define COLUMN_EIGHT                                        8
+#define COLUMN_NINE                                         9
+#define COLUMN_TWELVE                                       12
+#define COLUMN_THIRTEEN                                     13
+#define TIMER_TICKS_15SEC                                   2
+#define TIMER_TICKS_15SEC_STOP                              4
+#define TIMER_TICKS_15SEC_NEXT_STAGE                        3
+#define TIMER_TICKS_1MINUTE                                 12
+#define TIMER_TICKS_1MINUTE_STOP                            13
+#define GLOBALE_ARRAY_OF_POINTERS_SIZE                      3
+#define MAX_WRONG_COUNTER                                   3
+#define GLOBALE_ARRAY    3
+/************************************************************************************************
+ *                                GLOBAL VARIABLES                                              *
+ ************************************************************************************************/
+
+static volatile uint8 g_flag=0;               /*global flag variable to check on */
+static volatile uint8  g_stateNum;            /*global state number of the main function */
+uint8 g_key;                                  /*global variable to hold the key value */
+uint8 g_password[5];                          /*global array to store the password in it */
+uint8 command;                                /*global variable to store the commands in it */
+uint8 g_wrong=0;                              /*global variable to count wrong password entered times*/
+uint8 g_tick=0;
+
+/************************************************************************************************
+ *                                 UART & TIMER CONFIGURATIONS                                  *
+ ************************************************************************************************/
+
+TIMER1_configType TIMER_config = {0,39062,F_CPU_1024};
+
+
+UART_config UART_configuration = {ASYNCHRONOUS,DISABLED,ONE,EIGHT};
+/************************************************************************************************
+ *                                   FUNCTIONS                                                  *
+ ************************************************************************************************/
+void createandstorePassword(void);
+void mainFucntion(void);
+void Storepassornot(void);
+void storepassword(uint8 a_arr[]);
+
+
+
+
+
+
+
+
+/************************************************************************************************
+ *            ARRAY OF POINTER TO FUNCTIONS THAT TAKE VOID AS AN ARGUMENT AND RETURN VOID       *                                       *
+ ************************************************************************************************/
+void (*ptr_states[GLOBALE_ARRAY])(void)={createandstorePassword,mainFucntion,doorIsOpeningCloseingScreen};
+
+
+
+
+#endif /* MCU1_H_ */

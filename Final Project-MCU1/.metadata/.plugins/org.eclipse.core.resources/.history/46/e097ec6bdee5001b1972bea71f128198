@@ -1,0 +1,70 @@
+/*
+ * MCU1.h
+ *
+ *  Created on: 15 Jul 2021
+ *      Author: 20128
+ */
+
+#ifndef MCU1_H_
+#define MCU1_H_
+/************************************************************************************************
+ *                                       DRIVERS                                         *
+ ************************************************************************************************/
+#include"keypad.h"
+#include"lcd.h"
+#include"UART.h"
+#include "timer1.h"
+#include"common_macros.h"
+#include"std_types.h"
+#include"micro_config.h"
+/************************************************************************************************
+ *                                       COMMANDS
+ ***************************************************************************************/
+#define MC1_READY     0XFE
+#define MC2_READY    0XFF
+#define BUZZER       0XFD
+#define DOOR         0XFC
+#define NEW_PASSWORD 0XFB
+#define GLOBALE_ARRAY   3
+
+
+/************************************************************************************************
+ *                                GLOBAL VARIABLES                                              *
+ ************************************************************************************************/
+
+
+
+/************************************************************************************************
+ *                                 UART & TIMER CONFIGURATIONS                                  *
+ ************************************************************************************************/
+/*initialization of configure UART driver by :
+ * 1. 8 bits data
+ * 2. baud rate of 9600
+ * 3. disable parity bit
+ * 4. one stop bit
+ * then send structure of configuration to the driver*/
+Uart_ConfigType UART_config = {8 , 9600 ,DISABLED , ONE_STOP_BIT };
+
+
+/************************************************************************************************
+ *                                   FUNCTIONS                                                  *
+ ************************************************************************************************/
+void createpassword(void);
+
+void sendPasswordToMC2(void);
+
+void mainfunction(uint8 key) ;
+
+void Alert(void) ;
+
+void doorOptions(void) ;
+
+/************************************************************************************************
+ *            ARRAY OF POINTER TO FUNCTIONS THAT TAKE VOID AS AN ARGUMENT AND RETURN VOID       *                                       *
+ ************************************************************************************************/
+void (*ptr_states[GLOBALE_ARRAY])(void)={ createpassword,mainfunction,doorOptions};
+
+
+
+
+#endif /* MCU1_H_ */

@@ -1,0 +1,254 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+#include"MCU1.h"
+
+
+
+int main(){
+
+uint8 keyPressed ; /* holds the pressing of even '*' or '%'*/
+LCD_init() ;  /*initialization of LCD */
+UART_init(&UART_config) ; /* */
+createpassword(); /* first time password */
+SET_BIT(SREG , 7) ; /*enabling global interrupt bit */
+
+
+	while(1){
+
+
+
+
+
+	}
+}
+/*-------------------------------------------------------------------------------
+[Function Name]: createPassword
+[Description]: make the user to put a new password
+[Return]: void
+ -------------------------------------------------------------------------------*/
+void createpassword(void){
+	/*
+	 * 1. flag to check matching of re-entered password with new one
+	 * 2.arrays to store new and re-entered passwords
+	 * 3. loop that not exit from till matching occur
+	 * 4. initially matched and if it isn't this flag equal zero
+	 * 5.tell the user to "Enter New Password then go to next row
+	 */
+
+	uint8 i , matchingFlag = 0 ;
+	uint8 newPassword [10] , reEnteredPassword [10] ;
+
+	while(matchingFlag ==0){
+		matchingFlag = 1;
+		LCD_clearScreen() ;
+		LCD_displayStringRowColumn(0 , 0 ,"Enter New Pass" );
+		LCD_goToRowColumn( 1 , 0 ) ;
+
+		/*
+		 * 1. make the user to enter the new password
+		 * 2.getting and store password from the keypad
+		 * 3.show to user '*' at any password character
+		 * 4. delay for debouncing
+		 *
+		 * */
+		 for(i = 0 ; i < 5 ; i++){
+		   newPassword [i] = KeyPad_getPressedKey() ;
+		   LCD_displayString("*") ;
+	    _delay_ms(1000);}
+		 /* telling the user to Re-enter the password for safety*/
+		 LCD_clearScreen() ;
+		  LCD_displayStringRowColumn(0 , 0 , "Re-Enter New Pass" );
+		  LCD_goToRowColumn( 1 , 0 ) ;
+		   for(i = 0 ; i < 5 ; i++)
+		   {
+		    reEnteredPassword [i] = KeyPad_getPressedKey() ;
+		  	LCD_displayString("*") ;
+		   _delay_ms(1000) ;}
+		  /*
+		   *  1.checking the matching between new password and Re-entered one
+		   *  2.at any unmatched character then zero matching flag and do the while loop again
+		   *   */
+		   for(i = 0 ; i < 5 ; i++){
+		   if(reEnteredPassword [i] != newPassword [i] ){
+		   LCD_clearScreen() ;
+		   LCD_displayStringRowColumn(0 , 0 ,"Unmatched! again" );
+		   _delay_ms(20000) ;
+		   matchingFlag  = 0 ;
+		   break ;
+		    	    		}}}
+	/*
+	 * 1. after matching then copying password to the global array and putting '#' for UART_recieveByte technique
+	 * 2. function to send password using UART*/
+		for(i = 0 ; i < 6 ; i++)
+		{
+			g_password[i] = newPassword [i] ;
+		}
+		g_password[i] = '#' ;
+		sendPasswordToMC2();
+}
+
+
+/*-------------------------------------------------------------------------------
+[Function Name]:  sendPasswordToMC2
+[Description]:  send password using UART
+[Return]: void
+ -------------------------------------------------------------------------------*/
+void sendPasswordToMC2(void)
+{
+	/*
+	 * 1.two Micro-controllers tells to us that they are ready for synchronization between them
+	 * 2. wait until MC2 is ready
+	 * */
+	UART_sendByte(MC1_READY) ;
+	while(UART_recieveByte() != MC2_READY);
+	UART_sendString(g_password);
+}
+
+
+/*-------------------------------------------------------------------------------
+[Function Name]: mainfunction
+[Description]:  checks the password entered with saved one initially then
+				even true then do the action user needed or wrong 3 times
+				then buzzer start with 1 minute alerting
+[Return]: void
+ -------------------------------------------------------------------------------*/
+void mainfunction(uint8 a_keyPressed)
+{
+	/*
+	 * 1. matching flag for check matching entered password with saved one
+	 * 2. wrong counter for counting till 3 wrong passwords enters
+	 * 3. array to save entered password from user*/
+	uint8 i , matchingFlag = 0 , wrongCounter = 0  ;
+	uint8 enteredPassword[10];
+
+	/* two micro-controllers tells to us that they are ready
+	 * for synchronization between them*/
+   	while(UART_recieveByte() != MC2_READY); // wait until MC2 is ready
+	UART_sendByte(MC1_READY) ;
+	UART_receiveString(g_password) ;
+
+	/* LCD shows waiting for readability of the program*/
+	LCD_clearScreen() ;
+	LCD_displayStringRowColumn(0 , 0 , "waiting...") ;
+	_delay_ms(30000);
+
+	/* loop that not exit from till matching occur or 3 wrong tries */
+	while((matchingFlag == 0) && (wrongCounter < 3))
+	{
+		matchingFlag = 1 ;/* initially matched and if it isn't this flag equal zero */
+
+		/*tell the user to "Enter old Password then go to next row in LCD*/
+    	LCD_clearScreen() ;
+		LCD_displayStringRowColumn(0 , 0 , "Enter Old Pass") ;
+		LCD_goToRowColumn( 1 , 0 ) ;
+
+   		/* getting and store entered password from the keypad */
+		for(i = 0 ; i < 6 ; i++)
+		{
+			enteredPassword [i] = KeyPad_getPressedKey() ;
+			LCD_displayString("*") ;
+			_delay_ms(1600) ;
+
+		}
+		/* checking the matching between entered password from user and saved onr */
+	   	for(i = 0 ; i < 6 ; i++)
+	    {
+	   		/* at any unmatched character then zero matching flag
+	   		 * and do the while loop again*/
+	    	if(enteredPassword [i] != g_password [i] )
+	    	{
+	    	    LCD_clearScreen() ;
+	    	    LCD_displayStringRowColumn(0 , 0 ,"Wrong Password!" );
+	    	    _delay_ms(30000) ;
+	    	    wrongCounter++ ;
+	    		matchingFlag  = 0 ;
+	    		break ;
+	    	}
+	    }
+
+
+	}
+	/* if the reason of exiting from the while loop was because of 3 times wrong entering */
+	if(wrongCounter >= 3)
+	{
+
+		/* two micro-controllers tells to us that they are ready
+		 * for synchronization between them*/
+		UART_sendByte(MC1_READY) ;
+		while(UART_recieveByte() != MC2_READY); // wait until MC2 is ready
+		/* send to micro-controller 2 to switch on the buzzer for 1 minute*/
+		UART_sendByte(BUZZER) ;
+
+		/* display on LCD that it is a thief for more safety */
+	    LCD_clearScreen() ;
+	    LCD_displayStringRowColumn(0 , 0 ,"Thief!!!" );
+
+	    /*configuration of TIMER1 to do buzzerTermination function at the interrupt of mode
+	     *  with callback technique*/
+	    /* 1. overflow mode
+	     * 2. initial value = 0
+	     * 3. compare A value = 0 (unused)
+	     * 4. compare B value = 0 (unused)
+	     * 5. Duty Cycle value = 0 (unused)
+	     * 6. Pre-scalar = 64 */
+		Timer1_OVF_setCallBack(buzzerTermination) ;
+	    TIMER1_ConfigType TIMER1_config = { OVERFLOW , 0 , 0  , 0 ,0 , F_CPU_64} ;
+	    TIMER1_init(&TIMER1_config ) ;
+
+	    /* entering while loop for delaying till 1 minute passes
+	     * then zero the flag from buzzerTermination function */
+	    g_delayFlag = 1 ;
+	    while(g_delayFlag == 1) ;
+	}
+	/* if the reason of exiting from the while loop was because of password is correct
+	 * and operation is changing password by '*' pressing */
+	else if (a_keyPressed == '*')
+	{
+		/* two micro-controllers tells to us that they are ready
+		 * for synchronization between them*/
+		UART_sendByte(MC1_READY) ;
+		while(UART_recieveByte() != MC2_READY); // wait until MC2 is ready
+		UART_sendByte(NEW_PASSWORD) ; /* send to MC2 that there will be new password to save in EEPROM*/
+
+		/* changing password of the system again*/
+		newPassword() ;
+	}
+	/* if the reason of exiting from the while loop was because of password is correct
+	 * and operation is opening the door by '%' pressing */
+	else if(a_keyPressed == '%')
+	{
+		/* two micro-controllers tells to us that they are ready
+		 * for synchronization between them*/
+		UART_sendByte(MC1_READY) ;
+		while(UART_recieveByte() != MC2_READY); // wait until MC2 is ready
+		UART_sendByte(DOOR) ;
+
+		/*display the status of the door in the fuction doorOperation */
+	    LCD_clearScreen() ;
+	    LCD_displayStringRowColumn(0 , 0 ,"DOOR IS :" );
+
+	    /*configuration of TIMER1 to do doorOperation function at the interrupt of mode
+	     *  with callback technique*/
+	    /* 1. overflow mode
+	     * 2. initial value = 0
+	     * 3. compare A value = 0 (unused)
+	     * 4. compare B value = 0 (unused)
+	     * 5. Duty Cycle value = 0 (unused)
+	     * 6. Pre-scalar = 64 */
+	    Timer1_OVF_setCallBack(doorOperations) ;
+	    TIMER1_ConfigType TIMER1_config = { OVERFLOW , 0 , 0  , 0 ,0 , F_CPU_64} ;
+	    TIMER1_init(&TIMER1_config ) ;
+
+	    /* entering while loop for delaying till door is opening and closing
+	     * then zero the flag from buzzerTermination function */
+	    g_delayFlag = 1 ;
+	    while(g_delayFlag == 1) ;
+	}
+
+
+}

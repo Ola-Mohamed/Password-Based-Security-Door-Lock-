@@ -1,0 +1,17 @@
+00:03:40 **** Incremental Build of configuration Debug for project Final_project_MCU1 ****
+make all 
+Building file: ../MCU1.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=8000000UL -MMD -MP -MF"MCU1.d" -MT"MCU1.o" -c -o "MCU1.o" "../MCU1.c"
+In file included from ../micro_config.h:22,
+                 from ../keypad.h:17,
+                 from ../MCU1.h:13,
+                 from ../MCU1.c:9:
+c:/winavr-20100110/lib/gcc/../../avr/include/util/delay.h:90:3: warning: #warning "Compiler optimizations disabled; functions from <util/delay.h> won't work as designed"
+../MCU1.c: In function 'main':
+../MCU1.c:37: error: too few arguments to function 'UART_init'
+make: *** [MCU1.o] Error 1
+"make all" terminated with exit code 2. Build might be incomplete.
+
+00:03:40 Build Failed. 2 errors, 1 warnings. (took 465ms)
+

@@ -1,0 +1,10 @@
+16:09:24 **** Incremental Build of configuration Debug for project MCU2 ****
+make all 
+Building file: ../MCU2.c
+Invoking: AVR Compiler
+avr-gcc -Wall -g2 -gstabs -O0 -fpack-struct -fshort-enums -ffunction-sections -fdata-sections -std=gnu99 -funsigned-char -funsigned-bitfields -mmcu=atmega16 -DF_CPU=1000000UL -MMD -MP -MF"MCU2.d" -MT"MCU2.o" -c -o "MCU2.o" "../MCU2.c"
+make: *** [MCU2.o] Error -1073741502
+"make all" terminated with exit code 2. Build might be incomplete.
+
+16:09:30 Build Failed. 1 errors, 0 warnings. (took 5s.835ms)
+

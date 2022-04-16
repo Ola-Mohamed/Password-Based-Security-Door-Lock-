@@ -1,0 +1,70 @@
+/*
+ * MCU1.h
+ *
+ *  Created on: 15 Jul 2021
+ *      Author: 20128
+ */
+
+#ifndef MCU1_H_
+#define MCU1_H_
+/************************************************************************************************
+ *                                       DRIVERS                                         *
+ ************************************************************************************************/
+#include"keypad.h"
+#include"lcd.h"
+#include"UART.h"
+#include "timer0.h"
+#include"common_macros.h"
+#include"std_types.h"
+#include"micro_config.h"
+/************************************************************************************************
+ *                                       COMMANDS                                          *
+ ************************************************************************************************/
+#define M1_READY 0x20
+#define M2_READY 0x10
+#define NUMBER_OF_OVERFLOWS_PER_SECOND 32
+#define GLOBALE_ARRAY    3
+/************************************************************************************************
+ *                                GLOBAL VARIABLES                                              *
+ ************************************************************************************************/
+
+static volatile uint8 g_flag=0;               /*global flag variable to check on */
+static volatile uint8  g_stateNum;            /*global state number of the main function */
+uint8 g_key;                                  /*global variable to hold the key value */
+uint8 g_password[5];                          /*global array to store the password in it */
+uint8 command;                                /*global variable to store the commands in it */
+uint8 g_wrong=0;                              /*global variable to count wrong password entered times*/
+uint8 g_tick=0;
+
+/************************************************************************************************
+ *                                 UART & TIMER CONFIGURATIONS                                  *
+ ************************************************************************************************/
+
+
+Timer0_ConfigType timer0_config = {CTC,F_CPU_1024,245};
+
+UART_config UART_configuration = {ASYNCHRONOUS,DISABLED,ONE,EIGHT};
+/************************************************************************************************
+ *                                   FUNCTIONS                                                  *
+ ************************************************************************************************/
+void createandstorePassword(void);
+void mainFucntion(void);
+void Storepassornot(void);
+void storepassword(uint8 a_arr[]);
+
+
+
+
+
+
+
+
+/************************************************************************************************
+ *            ARRAY OF POINTER TO FUNCTIONS THAT TAKE VOID AS AN ARGUMENT AND RETURN VOID       *                                       *
+ ************************************************************************************************/
+void (*ptr_states[GLOBALE_ARRAY])(void)={createandstorePassword,mainFucntion,doorIsOpeningCloseingScreen};
+
+
+
+
+#endif /* MCU1_H_ */

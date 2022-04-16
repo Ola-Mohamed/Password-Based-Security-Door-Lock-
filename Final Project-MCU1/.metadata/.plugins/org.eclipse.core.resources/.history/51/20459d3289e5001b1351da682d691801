@@ -1,0 +1,61 @@
+/*
+ * MCU1.h
+ *
+ *  Created on: 15 Jul 2021
+ *      Author: 20128
+ */
+
+#ifndef MCU1_H_
+#define MCU1_H_
+/************************************************************************************************
+ *                                       DRIVERS                                         *
+ ************************************************************************************************/
+#include"keypad.h"
+#include"lcd.h"
+#include"UART.h"
+#include "timer0.h"
+#include"common_macros.h"
+#include"std_types.h"
+#include"micro_config.h"
+/************************************************************************************************
+ *                                       COMMANDS                                          *
+ ************************************************************************************************/
+#define M1_READY 0x20
+#define M2_READY 0x10
+#define NUMBER_OF_OVERFLOWS_PER_SECOND 32
+
+/************************************************************************************************
+ *                                GLOBAL VARIABLES                                              *
+ ************************************************************************************************/
+
+/*timer global variables*/
+uint8 volatile g_tick = 0;
+uint8 volatile g_sec_counted = 0;
+uint8 volatile g_seconds_needed=0;
+
+/*global variable determines in which step the code will be */
+uint8 volatile g_step=0;
+
+
+/************************************************************************************************
+ *                                 UART & TIMER CONFIGURATIONS                                  *
+ ************************************************************************************************/
+
+
+
+
+UART_config UART_configuration = {ASYNCHRONOUS,DISABLED,ONE,EIGHT};
+/************************************************************************************************
+ *                                   FUNCTIONS                                                  *
+ ************************************************************************************************/
+void createandstorePassword(void);
+void mainFucntion(void);
+ void password( uint8 key[]);
+
+
+
+
+
+
+
+#endif /* MCU1_H_ */

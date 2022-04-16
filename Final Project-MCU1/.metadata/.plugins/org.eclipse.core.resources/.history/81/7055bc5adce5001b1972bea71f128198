@@ -1,0 +1,107 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+#include"MCU1.h"
+
+
+
+int main(){
+
+
+
+
+
+
+
+	while(1){
+
+
+
+
+
+	}
+}
+/*-------------------------------------------------------------------------------
+[Function Name]: createPassword
+[Description]: make the user to put a new password
+[Return]: void
+ -------------------------------------------------------------------------------*/
+void createpassword(void){
+	/*
+	 * 1. flag to check matching of re-entered password with new one
+	 * 2.arrays to store new and re-entered passwords
+	 * 3. loop that not exit from till matching occur
+	 * 4. initially matched and if it isn't this flag equal zero
+	 * 5.tell the user to "Enter New Password then go to next row
+	 */
+
+	uint8 i , matchingFlag = 0 ;
+	uint8 newPassword [10] , reEnteredPassword [10] ;
+
+	while(matchingFlag ==0){
+		matchingFlag = 1;
+		LCD_clearScreen() ;
+		LCD_displayStringRowColumn(0 , 0 ,"Enter New Pass" );
+		LCD_goToRowColumn( 1 , 0 ) ;
+
+		/*
+		 * 1. make the user to enter the new password
+		 * 2.getting and store password from the keypad
+		 * 3.show to user '*' at any password character
+		 * 4. delay for debouncing
+		 *
+		 * */
+		 for(i = 0 ; i < 5 ; i++){
+		   newPassword [i] = KeyPad_getPressedKey() ;
+		   LCD_displayString("*") ;
+	    _delay_ms(1000);}
+		 /* telling the user to Re-enter the password for safety*/
+		 LCD_clearScreen() ;
+		  LCD_displayStringRowColumn(0 , 0 , "Re-Enter New Pass" );
+		  LCD_goToRowColumn( 1 , 0 ) ;
+		   for(i = 0 ; i < 5 ; i++)
+		   {
+		    reEnteredPassword [i] = KeyPad_getPressedKey() ;
+		  	LCD_displayString("*") ;
+		   _delay_ms(1000) ;}
+		  /*
+		   *  1.checking the matching between new password and Re-entered one
+		   *  2.at any unmatched character then zero matching flag and do the while loop again
+		   *   */
+		   for(i = 0 ; i < 5 ; i++){
+		   if(reEnteredPassword [i] != newPassword [i] ){
+		   LCD_clearScreen() ;
+		   LCD_displayStringRowColumn(0 , 0 ,"Unmatched! again" );
+		   _delay_ms(20000) ;
+		   matchingFlag  = 0 ;
+		   break ;
+		    	    		}}}
+	/*
+	 * 1. after matching then copying password to the global array and putting '#' for UART_recieveByte technique
+	 * 2. function to send password using UART*/
+		for(i = 0 ; i < 6 ; i++)
+		{
+			g_password[i] = newPassword [i] ;
+		}
+		g_password[i] = '#' ;
+		sendPasswordToMC2();
+}
+
+
+/*-------------------------------------------------------------------------------
+[Function Name]:  sendPasswordToMC2
+[Description]:  send password using UART
+[Return]: void
+ -------------------------------------------------------------------------------*/
+void sendPasswordToMC2(void)
+{
+	/* two Micro-controllers tells to us that they are ready
+	 * for synchronization between them*/
+	UART_sendByte(MC1_READY) ;
+	while(UART_recieveByte() != MC2_READY); // wait until MC2 is ready
+	UART_sendString(g_password) ;
+}

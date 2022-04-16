@@ -1,0 +1,320 @@
+/*
+ * MCU1.C
+ *
+ *  Created on: 13 Jul 2021
+ *      Author: Ola Mohamed
+ */
+
+
+#include"MCU1.h"
+
+
+
+
+void ISR_COUNT(void){
+	g_tick++;		/*increases the global tick each time the timer interrupt*/
+	if(g_tick == NUMBER_OF_OVERFLOWS_PER_SECOND){		/*checks if the timer counted one second*/
+		g_tick = 0; 									/*clear the tick counter again to count a new second*/
+		g_sec_counted++;								/*increases seconds counter*/
+
+		/*checks if seconds counter reached the required secounds
+		 * clears the seconds counter
+		 * stop timer0
+		 * go to step 2 (main)
+		 */
+		if (g_sec_counted==g_seconds_needed){
+			g_sec_counted=0;
+			timer0_DeInit();
+			g_step=2;
+		}
+	}
+
+
+}
+
+
+int main(){
+
+		LCD_init();
+		UART_init(&UART_configuration);
+		LCD_clearScreen();
+		LCD_displayStringRowColumn(1,1,"DOOR LOCKER SYSTEM");
+
+		UART_sendByte(M1_READY);
+		g_step=UART_recieveByte();
+
+while(1){
+
+}}
+
+/***************************************************************************************************
+ * [Function Name]:   createPassword
+ *
+ * [Description]:     Function to Create and Store password in  array
+ *
+ * [Arguments]:       void
+ *
+ * [Returns]:         void
+ ***************************************************************************************************/
+void createandstorePassword(void){
+
+	switch(g_step){
+	/*
+	 * 1.open the project for the first time and there is no password saved in EEPROM or when changing password
+	 * 2.display message to enter password*/
+	case 0:
+		LCD_clearScreen();
+		LCD_displayString("Enter Password:");	/*display string on LCD for 0.5 second*/
+		LCD_goToRowColumn(1,0);
+		for(int i=0 ;i<5;i++ ){
+		/* if any switch pressed for more than 500 ms it counts more than one press */
+		key[i] = KeyPad_getPressedKey(); /* get the pressed key number */
+		LCD_displayCharacter('*');
+		/*extra addition
+		 * button ON/C in keyboard clears the password entered without count any wrong trials
+		*/
+		if(key[i]==13){
+		/*resets the LCD screen*/
+	   LCD_clearScreen();
+	   LCD_displayString("Enter Password:");
+	   LCD_goToRowColumn(1,0);
+		i=-1;	/*the counter is set to -1 so the next loop will be resets to zero as i increases in each loop by one*/
+			}
+			 /* Press time */
+			}
+			LCD_clearScreen();
+			/*repeats entering the key until user presses = sign */
+			do
+			{
+			LCD_displayString("press = to send!");//Statements
+			send_key=KeyPad_getPressedKey();
+			}while(send_key!= '=');
+
+			/*in case the user pressed send button the MCU1 sends the password to MCU2*/
+			for (int i=0;i<5;i++){
+			UART_sendByte(key[i]);
+			}
+			LCD_clearScreen();
+			LCD_displayString("password1 sent");
+			//delay
+			LCD_clearScreen();
+
+
+		/* reentering the new password to make sure that the entered password is the wanted one*/
+
+		LCD_displayString("reenter new pass");
+		LCD_goToRowColumn(1,0);
+		for(int i=0 ;i<5;i++ ){
+		/* if any switch pressed for more than 500 ms it counts more than one press */
+		key[i] = KeyPad_getPressedKey(); /* get the pressed key number */
+		LCD_displayCharacter('*');
+							/*extra addition
+							 * button ON/C in keyboard clears the password entered without count any wrong trials
+							 */
+							if(key[i]==13){
+								/*reset the LCD*/
+								LCD_clearScreen();
+								LCD_displayString("reenter new pass");
+								LCD_goToRowColumn(1,0);
+								i=-1;					/*the counter is set to -1 so the next loop will be resets to zero as i increases in each loop by one*/
+							}
+							 /* Press time */
+						}
+						LCD_clearScreen();
+
+						/*also repeats entering the key until user presses = sign */
+						do
+						{
+							LCD_displayString("press = to send!");//Statements
+							send_key=KeyPad_getPressedKey();
+						}while(send_key!= '=');
+
+						/*in case the user pressed send button the MCU1 sends the password to MCU2*/
+	for (int i=0;i<5;i++){
+	UART_sendByte(key[i]);
+		}
+ LCD_clearScreen();
+ LCD_displayString("password2 sent");
+_delay_ms(500);
+
+/*receiving byte which determines if the two passwords are matched it will go to next step
+ * either the two passwords are unmatched so it repeats the current step until the two passwords are matched
+	 */
+	g_step=UART_recieveByte();
+	LCD_clearScreen();
+	g_step=UART_recieveByte();
+	LCD_clearScreen();
+	if (g_step==0){
+	LCD_displayString("unmatched!!");
+   _delay_ms(500);
+   LCD_clearScreen();
+
+	}else if(g_step==1){
+	LCD_displayString("matched!");
+    LCD_displayStringRowColumn(1,0,"pass saved!");
+	_delay_ms(500);
+	g_step=2;
+    }
+	break;
+	case 1:
+				/*this steps displays that the two passwords sent are matched and saved in EEPROM*/
+				            /***********************************************************
+							 *                      ----> Save password to EEPROM      *
+							 *          IF Matched -                                   *
+							 *                      ----> then go to step 2            *
+							 ***********************************************************/
+				LCD_displayString("matched!");
+				LCD_displayStringRowColumn(1,0,"pass saved!");
+				_delay_ms(500);
+				g_step=2;
+				break;
+}}
+
+/***************************************************************************************************
+ * [Function Name]:   mainFucntion
+ *
+ * [Description]:     The main functions of the MCU1 that has 2 options either to open the door or
+ *                    to change the password
+ *
+ * [Arguments]:       void
+ *
+ * [Returns]:         void
+ ***************************************************************************************************/
+void mainFucntion(void)
+{
+
+	while(UART_recieveByte()!=M2_READY);
+	LCD_clearScreen();
+	LCD_displayStringRowColumn(0,8,"(+): CHANGE PASSWORD");
+	LCD_displayStringRowColumn(1,8,"(-): OPEN DOOR");
+	switch(KeyPad_getPressedKey()){
+
+	case '-':
+		LCD_displayString("enter password");
+		LCD_goToRowColumn(1,0);
+		/*enters the password*/
+		for(int i=0 ;i<5;i++ ){
+		/* if any switch pressed for more than 500 ms it counts more than one press */
+		key[i] = KeyPad_getPressedKey(); /* get the pressed key number */
+		LCD_displayCharacter('*');
+		/*extra additin
+		 * button ON/C in keyboard clears the password entered without count any wrong trials */
+			if(key[i]==13){
+			/*reset the screen*/
+			LCD_clearScreen();
+			LCD_displayString("enter password ");
+			LCD_goToRowColumn(1,0);
+			i=-1;/*the counter is set to -1 so the next loop will be resets to zero as i increases in each loop by one*/
+		}
+		_delay_ms(500); /* Press time */
+		LCD_clearScreen();
+		/*repeats entering the key until user presses = sign */
+					do
+					{
+						LCD_displayString("press = to send!");//Statements
+						send_key=KeyPad_getPressedKey();
+					}while(send_key!= '=');
+
+					/*sends the password to MCU2*/
+					for (int i=0;i<5;i++){
+						UART_sendByte(key[i]);
+					}
+		LCD_clearScreen();
+					/*receive byte checks the password with the saved in EEPROM*/
+		check=UART_recieveByte();
+		if(check==0){
+		/*in case the user didn't enter the correct password the lcd displays unmatched and receive step the code will goto*/
+		LCD_displayString("unmatched");
+		_delay_ms(1000);
+		LCD_clearScreen();
+		g_step=UART_recieveByte();
+		}else if(check==1){
+		/*in case the password matches displays matched in LCD and counts 15 seconds while displaying that the door is opening*/
+	   LCD_displayString("matched");
+	  _delay_ms(1000);
+	  LCD_clearScreen();
+    	while(UART_recieveByte()!=M2_READY);		/*waits until MCU2 is ready*/
+		g_seconds_needed=15;						/*set the required time*/
+		SREG |= (1<<7);								/*enable I-bit*/
+		Set_callBack(ISR_COUNT);					/* Set the Call back function pointer in the timer0 driver*/
+		Timer0_ConfigType timer0_config = {CTC,F_CPU_1024,245};	/*create the configuration parameters of timer0*/
+		LCD_displayString("door is opening!");			/*displays that the door is opening*/
+		Timer0_init(&timer0_config);		/*initialize the timer with selected configurations*/
+	    /*this line prevents the code to repeat step3 and get stuck in UART receiving byte
+		 * the code will wait in infinite loop until the counter finishes and reset the step to main
+		 */
+		while(g_step!=2);
+			}
+       break;
+
+	case '+' :
+	LCD_displayString("enter password");
+	LCD_goToRowColumn(1,0);
+	for(int i=0 ;i<5;i++ ){
+	/* if any switch pressed for more than 500 ms it counts more than one press */
+	key[i] = KeyPad_getPressedKey(); /* get the pressed key number */
+	LCD_displayCharacter('*');
+	/*extra addition
+	* button ON/C in keyboard clears the password entered without count any wrong trials
+	*/
+	if(key[i]==13){
+	/*reset the LCD screen*/
+	LCD_clearScreen();
+    LCD_displayString("enter password ");
+	LCD_goToRowColumn(1,0);
+    i=-1;							/*the counter is set to -1 so the next loop will be resets to zero as i increases in each loop by one*/
+	}
+						_delay_ms(500); /* Press time */
+					}
+
+					LCD_clearScreen();
+
+					/*repeats entering the key until user presses = sign */
+					do
+					{
+						LCD_displayString("press = to send!");//Statements
+						send_key=KeyPad_getPressedKey();
+					}while(send_key!= '=');
+
+					/*send password and receives the check from MCU2*/
+					for (int i=0;i<5;i++){
+						UART_sendByte(key[i]);
+					}
+					LCD_clearScreen();
+
+
+
+					check=UART_recieveByte();
+
+
+
+					/*in case the password didn't match the saved in EEPROM the MCU2 sends that the two passes aren't same
+					 * and repeat the current step, and in case they matched the code goto step 1 where user can change password
+					 */
+					            /******************************************************************************
+								 *                    IF MATECHED ---> go to step 0                           *
+								 ******************************************************************************/
+
+					if(check==0){
+						LCD_displayString("unmatched");
+						_delay_ms(1000);
+						LCD_clearScreen();
+						g_step=UART_recieveByte();
+					}else if(check==1){
+						LCD_displayString("matched");
+						_delay_ms(1000);
+						LCD_clearScreen();
+						g_step=UART_recieveByte();
+					}
+					break;
+
+
+
+	}
+
+
+
+
+}
+					}
+
